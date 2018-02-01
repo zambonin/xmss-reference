@@ -13,8 +13,14 @@ TESTS = test/wots \
 		test/xmss_determinism \
 		test/xmss \
 		test/xmss_fast \
+		test/xmss_b_fast \
+		test/xmss_r_fast \
+		test/xmss_br_fast \
 		test/xmssmt \
 		test/xmssmt_fast \
+		test/xmssmt_b_fast \
+		test/xmssmt_r_fast \
+		test/xmssmt_br_fast \
 
 UI = ui/xmss_keypair \
 	 ui/xmss_sign \
@@ -41,11 +47,29 @@ test: $(TESTS:=.exec)
 test/%.exec: test/%
 	@$<
 
+test/xmss_b_fast: test/xmss.c $(SOURCES_FAST) $(OBJS) $(HEADERS_FAST)
+	$(CC) -DXMSS_SIGNATURES=1024 -DPADDING $(CFLAGS) -o $@ $(SOURCES_FAST) $< $(LDLIBS)
+
+test/xmss_r_fast: test/xmss.c $(SOURCES_FAST) $(OBJS) $(HEADERS_FAST)
+	$(CC) -DXMSS_SIGNATURES=1024 -DTHRESHOLD=200 $(CFLAGS) -o $@ $(SOURCES_FAST) $< $(LDLIBS)
+
+test/xmss_br_fast: test/xmss.c $(SOURCES_FAST) $(OBJS) $(HEADERS_FAST)
+	$(CC) -DXMSS_SIGNATURES=1024 -DPADDING -DTHRESHOLD=200 $(CFLAGS) -o $@ $(SOURCES_FAST) $< $(LDLIBS)
+
 test/xmss_fast: test/xmss.c $(SOURCES_FAST) $(OBJS) $(HEADERS_FAST)
 	$(CC) -DXMSS_SIGNATURES=1024 $(CFLAGS) -o $@ $(SOURCES_FAST) $< $(LDLIBS)
 
 test/xmss: test/xmss.c $(SOURCES) $(OBJS) $(HEADERS)
 	$(CC) $(CFLAGS) -o $@ $(SOURCES) $< $(LDLIBS)
+
+test/xmssmt_b_fast: test/xmss.c $(SOURCES_FAST) $(OBJS) $(HEADERS_FAST)
+	$(CC) -DXMSSMT -DXMSS_SIGNATURES=1024 -DPADDING $(CFLAGS) -o $@ $(SOURCES_FAST) $< $(LDLIBS)
+
+test/xmssmt_r_fast: test/xmss.c $(SOURCES_FAST) $(OBJS) $(HEADERS_FAST)
+	$(CC) -DXMSSMT -DXMSS_SIGNATURES=1024 -DTHRESHOLD=200 $(CFLAGS) -o $@ $(SOURCES_FAST) $< $(LDLIBS)
+
+test/xmssmt_br_fast: test/xmss.c $(SOURCES_FAST) $(OBJS) $(HEADERS_FAST)
+	$(CC) -DXMSSMT -DXMSS_SIGNATURES=1024 -DPADDING -DTHRESHOLD=200 $(CFLAGS) -o $@ $(SOURCES_FAST) $< $(LDLIBS)
 
 test/xmssmt_fast: test/xmss.c $(SOURCES_FAST) $(OBJS) $(HEADERS_FAST)
 	$(CC) -DXMSSMT -DXMSS_SIGNATURES=1024 $(CFLAGS) -o $@ $(SOURCES_FAST) $< $(LDLIBS)

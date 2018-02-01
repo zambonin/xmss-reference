@@ -3,6 +3,10 @@
 
 #include <stdint.h>
 
+#ifndef THRESHOLD
+  #define THRESHOLD 1
+#endif
+
 /* These are merely internal identifiers for the supported hash functions. */
 #define XMSS_SHA2 0
 #define XMSS_SHAKE 1

@@ -30,6 +30,40 @@ typedef struct {
     unsigned int next_leaf;
 } bds_state;
 
+/* Choose better value for randomized message hashing. */
+void compute_threshold(const xmss_params *params,
+                       const unsigned char *pub_root, unsigned long idx,
+                       unsigned char *sm, unsigned long long mlen,
+                       unsigned char *R)
+{
+  uint32_t sum = 0, tmp = 0, i = 0;
+  int len[params->wots_len1];
+  unsigned char tmpmsg[params->n], new_r[params->n],
+                all_r[params->n * THRESHOLD];
+
+  randombytes(all_r, params->n * THRESHOLD);
+
+  for (i = 0; i < THRESHOLD; ++i) {
+    /* Compute the digest randomization value. */
+    memcpy(new_r, all_r + (i * params->n), params->n);
+
+    /* Compute the message hash. */
+    hash_message(params, tmpmsg, new_r, pub_root, idx,
+                 sm + params->sig_bytes - 4*params->n, mlen);
+    base_w(params, len, params->wots_len1, tmpmsg);
+
+    for (unsigned int j = 0; j < params->wots_len1; ++j) {
+      sum += len[j];
+    }
+
+    if (sum > tmp) {
+      tmp = sum;
+      memcpy(R, new_r, params->n);
+    }
+    sum = 0;
+  }
+}
+
 /* These serialization functions provide a transition between the current
    way of storing the state in an exposed struct, and storing it as part of the
    byte array that is the secret key.
@@ -616,7 +650,11 @@ int xmss_core_sign(const xmss_params *params,
 
     // Message Hash:
     // First compute pseudorandom value
-    prf(params, R, idx_bytes_32, sk_prf);
+    if (THRESHOLD != 1)
+      compute_threshold(params, pub_root, idx, sm, mlen, R);
+    else {
+      prf(params, R, idx_bytes_32, sk_prf);
+    }
 
     /* Already put the message in the right place, to make it easier to prepend
      * things when computing the hash over the message. */

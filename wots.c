@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "utils.h"
@@ -52,8 +53,8 @@ static void gen_chain(const xmss_params *params,
  * Interprets an array of bytes as integers in base w.
  * This only works when log_w is a divisor of 8.
  */
-static void base_w(const xmss_params *params,
-                   int *output, const int out_len, const unsigned char *input)
+void base_w(const xmss_params *params,
+            int *output, const int out_len, const unsigned char *input)
 {
     int in = 0;
     int out = 0;
@@ -93,12 +94,21 @@ static void wots_checksum(const xmss_params *params,
     base_w(params, csum_base_w, params->wots_len2, csum_bytes);
 }
 
+#ifdef PADDING
+  int *l;
+#endif
+
 /* Takes a message and derives the matching chain lengths. */
 static void chain_lengths(const xmss_params *params,
                           int *lengths, const unsigned char *msg)
 {
     base_w(params, lengths, params->wots_len1, msg);
     wots_checksum(params, lengths + params->wots_len1, lengths);
+#ifdef PADDING
+    lengths[params->wots_len - params->wots_len2] = params->wots_w - 1;
+    l = (int*)calloc(params->wots_len, sizeof(int));
+    memcpy(l, lengths, params->wots_len * sizeof(int));
+#endif
 }
 
 /**
@@ -136,6 +146,7 @@ void wots_sign(const xmss_params *params,
 {
     int lengths[params->wots_len];
     uint32_t i;
+    (void)msg;
 
     chain_lengths(params, lengths, msg);
 
@@ -158,14 +169,22 @@ void wots_pk_from_sig(const xmss_params *params, unsigned char *pk,
                       const unsigned char *sig, const unsigned char *msg,
                       const unsigned char *pub_seed, uint32_t addr[8])
 {
-    int lengths[params->wots_len];
     uint32_t i;
+    (void)msg;
 
+#ifndef PADDING
+    int lengths[params->wots_len];
     chain_lengths(params, lengths, msg);
+#endif
 
     for (i = 0; i < params->wots_len; i++) {
         set_chain_addr(addr, i);
+#ifndef PADDING
         gen_chain(params, pk + i*params->n, sig + i*params->n,
                   lengths[i], params->wots_w - 1 - lengths[i], pub_seed, addr);
+#else
+        gen_chain(params, pk + i*params->n, sig + i*params->n,
+                  l[i], params->wots_w - 1 - l[i], pub_seed, addr);
+#endif
     }
 }

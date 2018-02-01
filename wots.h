@@ -5,6 +5,14 @@
 #include "params.h"
 
 /**
+ * base_w algorithm as described in draft.
+ * Interprets an array of bytes as integers in base w.
+ * This only works when log_w is a divisor of 8.
+ */
+void base_w(const xmss_params *params,
+            int *output, const int out_len, const unsigned char *input);
+
+/**
  * WOTS key generation. Takes a 32 byte seed for the private key, expands it to
  * a full WOTS private key and computes the corresponding public key.
  * It requires the seed pub_seed (used to generate bitmasks and hash keys)

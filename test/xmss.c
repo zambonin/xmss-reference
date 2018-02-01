@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "../xmss.h"
 #include "../params.h"
@@ -57,7 +58,10 @@ int main()
     for (i = 0; i < XMSS_SIGNATURES; i++) {
         printf("  - iteration #%d:\n", i);
 
+        clock_t begin = clock();
         XMSS_SIGN(sk, sm, &smlen, m, XMSS_MLEN);
+        clock_t end = clock();
+        printf("signature time: %lf\n", (double)(end - begin) / CLOCKS_PER_SEC);
 
         if (smlen != params.sig_bytes + XMSS_MLEN) {
             printf("  X smlen incorrect [%llu != %u]!\n",
@@ -69,6 +73,7 @@ int main()
         }
 
         /* Test if signature is valid. */
+        begin = clock();
         if (XMSS_SIGN_OPEN(mout, &mlen, sm, smlen, pk)) {
             printf("  X verification failed!\n");
             ret = -1;
@@ -76,6 +81,8 @@ int main()
         else {
             printf("    verification succeeded.\n");
         }
+        end = clock();
+        printf("verification time: %lf\n", (double)(end - begin) / CLOCKS_PER_SEC);
 
         /* Test if the correct message was recovered. */
         if (mlen != XMSS_MLEN) {
