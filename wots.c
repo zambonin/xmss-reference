@@ -8,6 +8,10 @@
 #include "hash_address.h"
 #include "params.h"
 
+#include <stdio.h>
+#include <math.h>
+
+
 /**
  * Helper method for pseudorandom key generation.
  * Expands an n-byte array into a len*n byte array using the `prf` function.
@@ -87,16 +91,19 @@ static void wots_checksum(const xmss_params *params,
         csum += params->wots_w - 1 - msg_base_w[i];
     }
 
+	#ifdef PADDING
+	csum += ((1 << (params->wots_len2 * params->wots_log_w) ) - 1)
+			- (1 << (int) ceil( log2(params->wots_len1 * params->wots_w) ))  - 1;
+	#endif
+
     /* Convert checksum to base_w. */
     /* Make sure expected empty zero bits are the least significant bits. */
     csum = csum << (8 - ((params->wots_len2 * params->wots_log_w) % 8));
     ull_to_bytes(csum_bytes, sizeof(csum_bytes), csum);
     base_w(params, csum_base_w, params->wots_len2, csum_bytes);
+
 }
 
-#ifdef PADDING
-  int *l;
-#endif
 
 /* Takes a message and derives the matching chain lengths. */
 static void chain_lengths(const xmss_params *params,
@@ -104,11 +111,6 @@ static void chain_lengths(const xmss_params *params,
 {
     base_w(params, lengths, params->wots_len1, msg);
     wots_checksum(params, lengths + params->wots_len1, lengths);
-#ifdef PADDING
-    lengths[params->wots_len - params->wots_len2] = params->wots_w - 1;
-    l = (int*)calloc(params->wots_len, sizeof(int));
-    memcpy(l, lengths, params->wots_len * sizeof(int));
-#endif
 }
 
 /**
@@ -172,19 +174,12 @@ void wots_pk_from_sig(const xmss_params *params, unsigned char *pk,
     uint32_t i;
     (void)msg;
 
-#ifndef PADDING
     int lengths[params->wots_len];
     chain_lengths(params, lengths, msg);
-#endif
 
     for (i = 0; i < params->wots_len; i++) {
         set_chain_addr(addr, i);
-#ifndef PADDING
         gen_chain(params, pk + i*params->n, sig + i*params->n,
                   lengths[i], params->wots_w - 1 - lengths[i], pub_seed, addr);
-#else
-        gen_chain(params, pk + i*params->n, sig + i*params->n,
-                  l[i], params->wots_w - 1 - l[i], pub_seed, addr);
-#endif
     }
 }
