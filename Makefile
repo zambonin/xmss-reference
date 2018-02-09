@@ -1,6 +1,8 @@
 CC = /usr/bin/gcc
 CFLAGS = -Wall -g -O3 -Wextra -Wpedantic
 LDLIBS = -lcrypto -lm
+THRESHOLD = 200
+SIGNATURES = 1024
 
 SOURCES = params.c hash.c fips202.c hash_address.c randombytes.c wots.c xmss.c xmss_core.c xmss_commons.c utils.c
 HEADERS = params.h hash.h fips202.h hash_address.h randombytes.h wots.h xmss.h xmss_core.h xmss_commons.h utils.h
@@ -48,31 +50,31 @@ test/%.exec: test/%
 	@$<
 
 test/xmss_b_fast: test/xmss.c $(SOURCES_FAST) $(OBJS) $(HEADERS_FAST)
-	$(CC) -DXMSS_SIGNATURES=1024 -DPADDING $(CFLAGS) -o $@ $(SOURCES_FAST) $< $(LDLIBS)
+	$(CC) -DXMSS_SIGNATURES=$(SIGNATURES) -DPADDING $(CFLAGS) -o $@ $(SOURCES_FAST) $< $(LDLIBS)
 
 test/xmss_r_fast: test/xmss.c $(SOURCES_FAST) $(OBJS) $(HEADERS_FAST)
-	$(CC) -DXMSS_SIGNATURES=1024 -DTHRESHOLD=200 $(CFLAGS) -o $@ $(SOURCES_FAST) $< $(LDLIBS)
+	$(CC) -DXMSS_SIGNATURES=$(SIGNATURES) -DTHRESHOLD=$(THRESHOLD) $(CFLAGS) -o $@ $(SOURCES_FAST) $< $(LDLIBS)
 
 test/xmss_br_fast: test/xmss.c $(SOURCES_FAST) $(OBJS) $(HEADERS_FAST)
-	$(CC) -DXMSS_SIGNATURES=1024 -DPADDING -DTHRESHOLD=200 $(CFLAGS) -o $@ $(SOURCES_FAST) $< $(LDLIBS)
+	$(CC) -DXMSS_SIGNATURES=$(SIGNATURES) -DPADDING -DTHRESHOLD=$(THRESHOLD) $(CFLAGS) -o $@ $(SOURCES_FAST) $< $(LDLIBS)
 
 test/xmss_fast: test/xmss.c $(SOURCES_FAST) $(OBJS) $(HEADERS_FAST)
-	$(CC) -DXMSS_SIGNATURES=1024 $(CFLAGS) -o $@ $(SOURCES_FAST) $< $(LDLIBS)
+	$(CC) -DXMSS_SIGNATURES=$(SIGNATURES) $(CFLAGS) -o $@ $(SOURCES_FAST) $< $(LDLIBS)
 
 test/xmss: test/xmss.c $(SOURCES) $(OBJS) $(HEADERS)
 	$(CC) $(CFLAGS) -o $@ $(SOURCES) $< $(LDLIBS)
 
 test/xmssmt_b_fast: test/xmss.c $(SOURCES_FAST) $(OBJS) $(HEADERS_FAST)
-	$(CC) -DXMSSMT -DXMSS_SIGNATURES=1024 -DPADDING $(CFLAGS) -o $@ $(SOURCES_FAST) $< $(LDLIBS)
+	$(CC) -DXMSSMT -DXMSS_SIGNATURES=$(SIGNATURES) -DPADDING $(CFLAGS) -o $@ $(SOURCES_FAST) $< $(LDLIBS)
 
 test/xmssmt_r_fast: test/xmss.c $(SOURCES_FAST) $(OBJS) $(HEADERS_FAST)
-	$(CC) -DXMSSMT -DXMSS_SIGNATURES=1024 -DTHRESHOLD=200 $(CFLAGS) -o $@ $(SOURCES_FAST) $< $(LDLIBS)
+	$(CC) -DXMSSMT -DXMSS_SIGNATURES=$(SIGNATURES) -DTHRESHOLD=$(THRESHOLD) $(CFLAGS) -o $@ $(SOURCES_FAST) $< $(LDLIBS)
 
 test/xmssmt_br_fast: test/xmss.c $(SOURCES_FAST) $(OBJS) $(HEADERS_FAST)
-	$(CC) -DXMSSMT -DXMSS_SIGNATURES=1024 -DPADDING -DTHRESHOLD=200 $(CFLAGS) -o $@ $(SOURCES_FAST) $< $(LDLIBS)
+	$(CC) -DXMSSMT -DXMSS_SIGNATURES=$(SIGNATURES) -DPADDING -DTHRESHOLD=$(THRESHOLD) $(CFLAGS) -o $@ $(SOURCES_FAST) $< $(LDLIBS)
 
 test/xmssmt_fast: test/xmss.c $(SOURCES_FAST) $(OBJS) $(HEADERS_FAST)
-	$(CC) -DXMSSMT -DXMSS_SIGNATURES=1024 $(CFLAGS) -o $@ $(SOURCES_FAST) $< $(LDLIBS)
+	$(CC) -DXMSSMT -DXMSS_SIGNATURES=$(SIGNATURES) $(CFLAGS) -o $@ $(SOURCES_FAST) $< $(LDLIBS)
 
 test/xmssmt: test/xmss.c $(SOURCES) $(OBJS) $(HEADERS)
 	$(CC) -DXMSSMT $(CFLAGS) -o $@ $(SOURCES) $< $(LDLIBS)
