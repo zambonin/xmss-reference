@@ -11,7 +11,7 @@ while : ; do
         /s.* t/ { s += $3 } /v.* t/ { v += $3 } END { print s / n, v / n }'
     done
   done
-  if grep -q "params->wots_w = 256;" ; then
+  if grep -q "params->wots_w = 256;" params.c ; then
     git checkout params.c
     break
   fi
